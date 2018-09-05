@@ -2,15 +2,26 @@ import torch
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 
-x1 = torch.randn(8, 10)
-x2 = torch.randn(6, 10)
-y = torch.empty(8, 6).bernoulli_().mul_(2).sub_(1)
-l = torch.nn.CosineEmbeddingLoss(.2)
+batchsize = 512
+feature_dim = 32
+center_num = 7
+margin = .2
+torch.manual_seed(1)
+np.random.seed(1)
+x1 = torch.randn(batchsize, feature_dim)
+x2 = torch.randn(center_num, feature_dim)
+y = np.random.randint(0, center_num, (batchsize))
+print(y)
+label = np.ones((batchsize, center_num), dtype=np.int32)*-1
+label[np.arange(batchsize), y] = 1
+label = torch.Tensor(label)
+print(label)
+l = torch.nn.CosineEmbeddingLoss(margin)
 
 print(l(
-    x1.unsqueeze(2).expand(8,10,6),
-    x2.transpose(0,1).unsqueeze(0).expand(8,10,6),
-    y))
+    x1.unsqueeze(2).expand(batchsize,feature_dim,center_num),
+    x2.transpose(0,1).unsqueeze(0).expand(batchsize,feature_dim,center_num),
+    label))
 
 
 a = np.random.random((8,10))
